@@ -7,7 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ConnectionManager.h"
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <ConnectionManagerDelegate>
+
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *connectButton;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+- (IBAction)connectButonTouched:(id)sender;
 
 @end
