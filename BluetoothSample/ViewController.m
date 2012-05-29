@@ -11,7 +11,6 @@
 
 @interface ViewController () {
     ConnectionManager *connectionManager;
-    CGPoint lastPoint;
 }
 
 @end
@@ -20,13 +19,15 @@
 @synthesize connectButton;
 @synthesize imageView;
 
+#pragma mark - View lifecycle methods
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     imageView.userInteractionEnabled = YES;
     imageView.backgroundColor = [UIColor whiteColor];
     connectButton.title = @"接続";
-    
+    // P2P接続のマネージャーを生成
 	connectionManager = [[ConnectionManager alloc] init];
     connectionManager.delegate = self;
 }
@@ -42,7 +43,7 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+    return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 #pragma mark - ConnectionManagerDelegate methods
@@ -50,9 +51,10 @@
 - (void)receiveData:(NSData *)data
            fromPeer:(NSString *)peer
 {
+    // 他のピアから受信したデータをデコード
     DrawData *drawData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-    
-    [self drawBetweenStartPoint:drawData.startPoint endPoint:drawData.destinationPoint];
+    // 他のピアで描かれた線を描画
+    [self drawLineBetweenStartPoint:drawData.startPoint endPoint:drawData.endPoint];
 }
 
 - (void)connected
@@ -67,7 +69,8 @@
 
 #pragma mark - Private methods
 
-- (void)drawBetweenStartPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint
+// 二点間に直線を描画する
+- (void)drawLineBetweenStartPoint:(CGPoint)startPoint endPoint:(CGPoint)endPoint
 {
     UIGraphicsBeginImageContext(imageView.frame.size);
     [imageView.image drawInRect:CGRectMake(0, 0, imageView.frame.size.width, imageView.frame.size.height)];
@@ -86,34 +89,32 @@
 
 #pragma mark - Handlers
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    NSLog(@"%@", @"touchesBegan");
-    
-    UITouch *touch = [touches anyObject];
-    lastPoint = [touch locationInView:imageView];
-}
-
+// touchesMovedイベントハンドラ
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"%@", @"touchesMoved");
-    
     UITouch *touch = [touches anyObject];
+    // 現在タッチ中のポイント
     CGPoint currentPoint = [touch locationInView:imageView];
+    // 前回タッチしていたポイント
+    CGPoint previousPoint = [touch previousLocationInView:imageView];
+    // 前回タッチしていたポイントと現在タッチ中のポイントの間に線を描画
+    [self drawLineBetweenStartPoint:previousPoint endPoint:currentPoint];
     
-    [self drawBetweenStartPoint:lastPoint endPoint:currentPoint];
-    
-    NSData *sendData = [NSKeyedArchiver archivedDataWithRootObject:[[DrawData alloc] initWithStartPoint:lastPoint destinationPoint:currentPoint]];
+    // 描画ポイント情報を送信用にエンコード
+    NSData *sendData = [NSKeyedArchiver archivedDataWithRootObject:[[DrawData alloc] initWithStartPoint:previousPoint destinationPoint:currentPoint]];
+    // 描画ポイント情報を他のピアに送信
     [connectionManager sendDataToAllPeers:sendData];
-    
-    lastPoint = currentPoint;
 }
 
+// 接続・切断ボタンタップイベント
 - (IBAction)connectButonTouched:(id)sender 
 {
-    if (connectionManager.isConnecting) {
+    if (connectionManager.isConnecting)
+    {
         [connectionManager disconnect];
-    } else {
+    }
+    else
+    {
         [connectionManager connect];
     }
 }

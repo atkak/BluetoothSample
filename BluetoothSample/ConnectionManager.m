@@ -21,23 +21,18 @@
 
 #pragma mark - GKPeerPickerControllerDelegate methods
 
-- (GKSession *)peerPickerController:(GKPeerPickerController *)picker 
-           sessionForConnectionType:(GKPeerPickerConnectionType)type
-{
-    GKSession *session = [[GKSession alloc] initWithSessionID:@"BluetoothTestID" 
-                                                  displayName:@"BluetoothTest" 
-                                                  sessionMode:GKSessionModePeer];
-    return session;
-}
-
 - (void)peerPickerController:(GKPeerPickerController *)picker 
               didConnectPeer:(NSString *)peerID 
                    toSession:(GKSession *)session
 {
+    // セッションを保管
     currentSession = session;
+    // デリゲートのセット
     session.delegate = self;
+    // データ受信時のハンドラを設定
     [session setDataReceiveHandler:self withContext:nil];
     
+    // ピアピッカーを閉じる
     picker.delegate = nil;
     [picker dismiss];
 }
@@ -64,12 +59,14 @@
             
         case GKPeerStateConnected:
             NSLog(@"%@", @"Peer state changed - connected");
+            // 接続完了を通知
             self.isConnecting = YES;
             [self.delegate connected];
             break;
             
         case GKPeerStateDisconnected:
             NSLog(@"%@", @"Peer state changed - disconnected");
+            // 切断を通知
             currentSession = nil;
             self.isConnecting = NO;
             [self.delegate disconnected];
@@ -89,6 +86,7 @@
           inSession:(GKSession *)session
             context:(void *)context
 {
+    // データ受信を通知
     [self.delegate receiveData:data fromPeer:peer];
 }
 
@@ -96,28 +94,39 @@
 
 - (void)connect
 {
+    // ピアピッカーを作成
     GKPeerPickerController* picker = [[GKPeerPickerController alloc] init];
     picker.delegate = self;
+    // 接続タイプはBluetoothのみ
     picker.connectionTypesMask = GKPeerPickerConnectionTypeNearby;
+    // ピアピッカーを表示
     [picker show];
 }
 
 - (void)disconnect
 {
-    if (currentSession) {
+    if (currentSession)
+    {
+        // P2P接続を切断する
         [currentSession disconnectFromAllPeers];
         currentSession = nil;
     }
     self.isConnecting = NO;
+    // 切断を通知
     [self.delegate disconnected];
 }
 
 - (void)sendDataToAllPeers:(NSData *)data
 {
-    if (currentSession) {
+    if (currentSession)
+    {
         NSError *error = nil;
-        [currentSession sendDataToAllPeers:data withDataMode:GKSendDataReliable error:&error];
-        if (error) {
+        // 接続中の全てのピアにデータを送信
+        [currentSession sendDataToAllPeers:data 
+                              withDataMode:GKSendDataReliable 
+                                     error:&error];
+        if (error)
+        {
             NSLog(@"%@", [error localizedDescription]);
         }
     }

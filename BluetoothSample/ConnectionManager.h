@@ -11,12 +11,13 @@
 
 @protocol ConnectionManagerDelegate <NSObject>
 
-@required
-
 @optional
+// データ受信時に呼び出される
 - (void)receiveData:(NSData *)data
            fromPeer:(NSString *)peer;
+// P2P接続完了時に呼び出される
 - (void)connected;
+// P2P接続切断時に呼び出される
 - (void)disconnected;
 
 @end

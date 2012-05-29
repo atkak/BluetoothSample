@@ -11,7 +11,7 @@
 @implementation DrawData
 
 @synthesize startPoint = _startPoint;
-@synthesize destinationPoint = _destinationPoint;
+@synthesize endPoint = _destinationPoint;
 
 - (id)initWithStartPoint:(CGPoint)startPoint destinationPoint:(CGPoint)destinationPoint
 {

@@ -11,7 +11,7 @@
 @interface DrawData : NSObject <NSCoding>
 
 @property (nonatomic) CGPoint startPoint;
-@property (nonatomic) CGPoint destinationPoint;
+@property (nonatomic) CGPoint endPoint;
 
 - (id)initWithStartPoint:(CGPoint)startPoint destinationPoint:(CGPoint)destinationPoint;
 
