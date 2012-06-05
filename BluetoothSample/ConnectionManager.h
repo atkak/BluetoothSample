@@ -3,22 +3,24 @@
 //  BluetoothTest
 //
 //  Created by 敦史 掛川 on 12/05/22.
-//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012年 Classmethod Inc.. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <GameKit/GameKit.h>
+@class ConnectionManager;
 
 @protocol ConnectionManagerDelegate <NSObject>
 
 @optional
 // データ受信時に呼び出される
-- (void)receiveData:(NSData *)data
-           fromPeer:(NSString *)peer;
+- (void)connectionManager:(ConnectionManager *)manager 
+           didReceiveData:(NSData *)data
+                 fromPeer:(NSString *)peer;
 // P2P接続完了時に呼び出される
-- (void)connected;
+- (void)connectionManagerDidConnect:(ConnectionManager *)manager;
 // P2P接続切断時に呼び出される
-- (void)disconnected;
+- (void)connectionManagerDidDisconnect:(ConnectionManager *)manager;
 
 @end
 

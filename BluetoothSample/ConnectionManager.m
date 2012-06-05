@@ -3,7 +3,7 @@
 //  BluetoothTest
 //
 //  Created by 敦史 掛川 on 12/05/22.
-//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012年 Classmethod Inc.. All rights reserved.
 //
 
 #import "ConnectionManager.h"
@@ -61,7 +61,7 @@
             NSLog(@"%@", @"Peer state changed - connected");
             // 接続完了を通知
             self.isConnecting = YES;
-            [self.delegate connected];
+            [self.delegate connectionManagerDidConnect:self];
             break;
             
         case GKPeerStateDisconnected:
@@ -69,7 +69,7 @@
             // 切断を通知
             currentSession = nil;
             self.isConnecting = NO;
-            [self.delegate disconnected];
+            [self.delegate connectionManagerDidDisconnect:self];
             break;
             
         case GKPeerStateUnavailable:
@@ -87,7 +87,9 @@
             context:(void *)context
 {
     // データ受信を通知
-    [self.delegate receiveData:data fromPeer:peer];
+    [self.delegate connectionManager:self 
+                      didReceiveData:data 
+                            fromPeer:peer];
 }
 
 #pragma mark - Public methods
@@ -113,7 +115,7 @@
     }
     self.isConnecting = NO;
     // 切断を通知
-    [self.delegate disconnected];
+    [self.delegate connectionManagerDidDisconnect:self];
 }
 
 - (void)sendDataToAllPeers:(NSData *)data

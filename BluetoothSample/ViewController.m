@@ -3,7 +3,7 @@
 //  BluetoothSample
 //
 //  Created by 敦史 掛川 on 12/05/22.
-//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012年 Classmethod Inc.. All rights reserved.
 //
 
 #import "ViewController.h"
@@ -48,8 +48,9 @@
 
 #pragma mark - ConnectionManagerDelegate methods
 
-- (void)receiveData:(NSData *)data
-           fromPeer:(NSString *)peer
+- (void)connectionManager:(ConnectionManager *)manager
+           didReceiveData:(NSData *)data
+                 fromPeer:(NSString *)peer
 {
     // 他のピアから受信したデータをデコード
     DrawData *drawData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
@@ -57,12 +58,12 @@
     [self drawLineBetweenStartPoint:drawData.startPoint endPoint:drawData.endPoint];
 }
 
-- (void)connected
+- (void)connectionManagerDidConnect:(ConnectionManager *)manager
 {
     connectButton.title = @"切断";
 }
 
-- (void)disconnected
+- (void)connectionManagerDidDisconnect:(ConnectionManager *)manager
 {
     connectButton.title = @"接続";
 }
